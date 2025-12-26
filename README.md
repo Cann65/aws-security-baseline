@@ -54,7 +54,7 @@ This repo is intentionally scoped to a **single AWS account** and **one region**
 
 ## 🧭 Architecture
 
-### Diagram (renders on GitHub)
+### Diagram 
 
 ```mermaid
 flowchart LR
