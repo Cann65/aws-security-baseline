@@ -65,6 +65,10 @@ flowchart LR
 
 ## 📸 Evidence — end-to-end proof (screenshots)
 
+**Preview:** end-to-end alert delivery (SNS → Email)
+
+![SNS alert email](docs/screenshots/07-sns-alert-email.png)
+
 <details>
 <summary>Show screenshots</summary>
 
