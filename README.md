@@ -14,27 +14,41 @@ Single-account demo (examples use `eu-central-1`).
 
 ---
 
-## ✨ What’s included
+## Project overview
 
-### 🏗️ Infrastructure (Terraform)
+This repository builds an AWS security alert pipeline and verifies that it works end-to-end.
 
-- **GuardDuty** enabled in target region
-- **EventBridge rule** that matches GuardDuty findings
-- **SNS topic** (`baseline-alerts`) + **email subscription** for notifications
-- **CloudTrail** enabled + CloudWatch Logs integration
-- **CloudWatch** retention + security alarms
-- **AWS Config** recorder + **S3 Public Read/Write** managed rules (optional module in this repo)
+Terraform deploys GuardDuty, EventBridge, and SNS, plus logging/alerting components (CloudTrail, CloudWatch Logs, retention, alarms).
 
-### 🧪 Verification (Python Audit CLI)
+The Python audit CLI verifies the setup and generates a report.
 
-Run `python -m aws_audit` to:
+This is about more than creating resources — it’s about proving that findings are routed correctly and alerts actually arrive.
 
-- validate GuardDuty/CloudTrail/SNS/alarms/retention
-- validate **IAM console users have MFA enabled**
-- write:
+### What it does
 
-  - `python-cli/out/scan.json` (machine-readable)
-  - `python-cli/out/report.md` (human-readable)
+- Enables **GuardDuty** in the selected region.
+- Creates an **EventBridge rule** that matches GuardDuty findings.
+- Forwards matching events to an **SNS topic** (`baseline-alerts`).
+- Delivers notifications to an **email subscription** (after subscription confirmation).
+- Enables **CloudTrail** and sends logs to **CloudWatch Logs** (including retention settings and basic alarms).
+- Optional: enables **AWS Config** and applies **S3 public read/write** managed rules.
+
+### Verification (Python audit CLI)
+
+After `terraform apply`, run:
+
+- `python -m aws_audit scan` to validate the key controls and wiring
+- `python -m aws_audit report --format markdown` to generate a readable report
+
+Outputs:
+- `python-cli/out/scan.json`
+- `python-cli/out/report.md`
+
+The **Evidence** section includes console/CLI screenshots and an example SNS email to show alert delivery.
+
+### Scope / non-goals
+
+This repo is intentionally scoped to a **single AWS account** and **one region** to keep deployment and verification reproducible. Organization-wide multi-account setups (AWS Organizations / delegated admin) and full landing zone patterns are out of scope for this repo.
 
 ---
 
@@ -67,7 +81,9 @@ flowchart LR
 
 **Preview:** end-to-end alert delivery (SNS → Email)
 
-![SNS alert email](docs/screenshots/07-sns-alert-email.png)
+<p align="center">
+  <img src="docs/screenshots/07-sns-alert-email.png" width="700" alt="SNS alert email">
+</p>
 
 <details>
 <summary>Show screenshots</summary>
@@ -108,12 +124,6 @@ flowchart LR
   <a href="docs/screenshots/06-guardduty-finding-console.png"><img src="docs/screenshots/06-guardduty-finding-console.png" width="700" alt="guardduty finding"></a>
   <br/>
   <sub><b>06</b> — GuardDuty finding in AWS Console</sub>
-</p>
-
-<p align="center">
-  <a href="docs/screenshots/07-sns-alert-email.png"><img src="docs/screenshots/07-sns-alert-email.png" width="700" alt="sns email"></a>
-  <br/>
-  <sub><b>07</b> — Alert email delivered via SNS (proof of end-to-end pipeline)</sub>
 </p>
 
 </details>
@@ -223,9 +233,15 @@ Covered by `.gitignore`, so these are already excluded from commits (double-chec
 
 ---
 
-## 💼 Recruiter-friendly summary
+## Next improvements (ideas)
 
-This project demonstrates:
+- Add Slack/Teams notifications (SNS → Lambda → webhook)
+- Add multi-account support (Organizations / delegated admin) as a separate module
+- Add a CI job to run the audit CLI in read-only mode
+
+---
+
+## What this demonstrates
 
 - AWS-native detection & alerting (**GuardDuty + EventBridge + SNS**)
 - Infrastructure as Code (**Terraform**) with reproducible deployments
