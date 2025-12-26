@@ -1,137 +1,209 @@
-🛡️ AWS Security Baseline  
-Infrastructure as Code • Automated Verification • Real Alerts
+# 🛡️ AWS Security Baseline — GuardDuty → EventBridge → SNS (Terraform) + Audit CLI (Python)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[![Terraform](https://img.shields.io/badge/Terraform-IaC-623CE4?logo=terraform\&logoColor=white)](https://www.terraform.io/)
+[![Python](https://img.shields.io/badge/Python-Audit%20CLI-3776AB?logo=python\&logoColor=white)](https://www.python.org/)
+[![AWS](https://img.shields.io/badge/AWS-GuardDuty%20%7C%20EventBridge%20%7C%20SNS-FF9900?logo=amazonaws\&logoColor=white)](https://aws.amazon.com/)
+[![CloudTrail](https://img.shields.io/badge/AWS-CloudTrail-FF9900?logo=amazonaws\&logoColor=white)](https://aws.amazon.com/cloudtrail/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](LICENSE)
 
-🔍 OVERVIEW
+A practical, reproducible **AWS security baseline** that deploys core controls with **Terraform** and verifies them with a lightweight **Python audit CLI**.
 
-This project implements a practical AWS security baseline and validates it through automated, live checks.
+✅ **Goal:** prove the full security signal pipeline works end-to-end — including **real alert delivery** — and document it with evidence.
 
-The focus is not only on deploying security services, but on proving that:
-• services are enabled  
-• integrations work end-to-end  
-• alerts are actually delivered  
+---
 
-This mirrors real-world cloud security engineering, not a lab demo.
+## ✨ What’s included
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 🏗️ Infrastructure (Terraform)
 
-🎯 OBJECTIVES
+* **GuardDuty** enabled in target region
+* **EventBridge rule** that matches GuardDuty findings
+* **SNS topic** (`baseline-alerts`) + **email subscription** for notifications
+* **CloudTrail** enabled + CloudWatch Logs integration
+* **CloudWatch** retention + security alarms
+* **AWS Config** recorder + **S3 Public Read/Write** managed rules (optional module in this repo)
 
-✔ Deploy core AWS security controls  
-✔ Verify configuration via live AWS APIs  
-✔ Demonstrate real alert delivery (SNS email)  
-✔ Keep the repository 100% secret-free  
-✔ Provide auditable evidence (screenshots)
+### 🧪 Verification (Python Audit CLI)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Run `python -m aws_audit` to:
 
-🧱 INFRASTRUCTURE (Terraform)
+* validate GuardDuty/CloudTrail/SNS/alarms/retention
+* validate **IAM console users have MFA enabled**
+* write:
 
-• AWS GuardDuty enabled  
-• EventBridge rule for GuardDuty findings  
-• SNS topic (baseline-alerts)  
-• Email subscription for alerts  
-• CloudTrail enabled and logging  
-• CloudWatch log retention configured  
-• Security-related CloudWatch alarms  
+  * `python-cli/out/scan.json` (machine-readable)
+  * `python-cli/out/report.md` (human-readable)
 
-All resources are deployed using Infrastructure as Code.
+---
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 🧭 Architecture
 
-🧪 VERIFICATION (Python Audit CLI)
+### Diagram (renders on GitHub)
 
-A lightweight Python CLI validates the baseline using live AWS API calls.
+```mermaid
+flowchart LR
+  GD[🛡️ GuardDuty Findings] --> EB[📡 EventBridge Rule]
+  EB --> SNS[📣 SNS Topic: baseline-alerts]
+  SNS --> EMAIL[✉️ Email Subscription]
 
-Checks include:
-• GuardDuty status  
-• CloudTrail logging  
-• Log retention policy  
-• SNS topic existence  
-• Alarm health  
-• IAM MFA enforcement  
-• STS caller identity  
+  CLI[🧪 Python Audit CLI] -. validates .-> GD
+  CLI -. validates .-> EB
+  CLI -. validates .-> SNS
+```
 
-Outputs:
-• scan.json (machine-readable)  
-• report.md (human-readable)
+### Components (official docs)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+* 🛡️ GuardDuty: [https://aws.amazon.com/guardduty/](https://aws.amazon.com/guardduty/)
+* 📡 EventBridge: [https://aws.amazon.com/eventbridge/](https://aws.amazon.com/eventbridge/)
+* 📣 SNS: [https://aws.amazon.com/sns/](https://aws.amazon.com/sns/)
+* 🧾 CloudTrail: [https://aws.amazon.com/cloudtrail/](https://aws.amazon.com/cloudtrail/)
+* 🧪 AWS Config: [https://aws.amazon.com/config/](https://aws.amazon.com/config/)
 
-🧭 ARCHITECTURE
+---
 
-GuardDuty  
-  ↓  
-EventBridge Rule  
-  ↓  
-SNS Topic  
-  ↓  
-Email Notification  
+## 📸 Evidence (clickable image links)
 
-The audit CLI independently verifies each component.
+> Tip: These are **clickable thumbnails**. Click to open the full-size image.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<p align="center">
+  <a href="docs/screenshots/01-eventbridge-guardduty-rule.png"><img src="docs/screenshots/01-eventbridge-guardduty-rule.png" width="800" alt="EventBridge rule"></a>
+  <br/>
+  <sub><b>01</b> — EventBridge rule: GuardDuty findings → SNS</sub>
+</p>
 
-📸 EVIDENCE
+<p align="center">
+  <a href="docs/screenshots/02-eventbridge-rule-cli.png"><img src="docs/screenshots/02-eventbridge-rule-cli.png" width="800" alt="describe-rule CLI"></a>
+  <br/>
+  <sub><b>02</b> — Verified via CLI: <code>aws events describe-rule</code></sub>
+</p>
 
-All evidence screenshots are stored in:
+<p align="center">
+  <a href="docs/screenshots/03-eventbridge-sns-target-cli.png"><img src="docs/screenshots/03-eventbridge-sns-target-cli.png" width="800" alt="targets CLI"></a>
+  <br/>
+  <sub><b>03</b> — Verified target via CLI: SNS is attached to the rule</sub>
+</p>
 
-docs/screenshots/
+<p align="center">
+  <a href="docs/screenshots/04-security-audit-cli.png"><img src="docs/screenshots/04-security-audit-cli.png" width="800" alt="audit CLI"></a>
+  <br/>
+  <sub><b>04</b> — Audit CLI: scan + markdown report generation</sub>
+</p>
 
-1. EventBridge rule (GuardDuty → SNS)  
-2. Rule verified via AWS CLI  
-3. SNS target attached to rule  
-4. Audit CLI scan & report  
-5. SNS topic with confirmed subscription  
-6. GuardDuty finding in AWS Console  
-7. Delivered alert email (SNS)
+<p align="center">
+  <a href="docs/screenshots/05-sns-topic-subscription.png"><img src="docs/screenshots/05-sns-topic-subscription.png" width="800" alt="sns subscription"></a>
+  <br/>
+  <sub><b>05</b> — SNS topic + confirmed email subscription</sub>
+</p>
 
-Screenshots are reviewed and redacted where required.
+<p align="center">
+  <a href="docs/screenshots/06-guardduty-finding-console.png"><img src="docs/screenshots/06-guardduty-finding-console.png" width="800" alt="guardduty finding"></a>
+  <br/>
+  <sub><b>06</b> — GuardDuty finding in AWS Console</sub>
+</p>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<p align="center">
+  <a href="docs/screenshots/07-sns-alert-email.png"><img src="docs/screenshots/07-sns-alert-email.png" width="800" alt="sns email"></a>
+  <br/>
+  <sub><b>07</b> — Alert email delivered via SNS (proof of end-to-end pipeline)</sub>
+</p>
 
-▶️ QUICK START
+---
 
-cd python-cli  
-python -m venv .venv  
+## ✅ Quickstart
 
-Windows:
-.\.venv\Scripts\Activate.ps1  
+### 1) Clone
 
-pip install -r requirements.txt  
+```bash
+git clone https://github.com/Cann65/aws-security-baseline.git
+cd aws-security-baseline
+```
 
-python -m aws_audit scan --profile <PROFILE> --region eu-central-1  
-python -m aws_audit report --format markdown  
+### 2) Deploy infrastructure (Terraform)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```bash
+cd terraform
+terraform init
+terraform apply -var="alert_email=YOUR_EMAIL"
+```
 
-🔐 SECURITY & DATA HANDLING
+### 3) Run the audit (Python)
 
-This repository does NOT contain:
-✖ AWS access keys  
-✖ Secrets or tokens  
-✖ SSO cache files  
-✖ Terraform state files  
-✖ Generated scan outputs  
+```bash
+cd ../python-cli
+python -m venv .venv
+# Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
 
-Sensitive artifacts are blocked via .gitignore.
+pip install -r requirements.txt
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+python -m aws_audit scan --profile <PROFILE> --region eu-central-1
+python -m aws_audit report --format markdown
+```
 
-💼 WHY THIS PROJECT MATTERS
+---
+
+## 🔎 Useful AWS CLI checks
+
+### EventBridge — rule
+
+```bash
+aws events describe-rule \
+  --name baseline-guardduty-findings \
+  --region eu-central-1 \
+  --profile <PROFILE>
+```
+
+### EventBridge — targets
+
+```bash
+aws events list-targets-by-rule \
+  --rule baseline-guardduty-findings \
+  --region eu-central-1 \
+  --profile <PROFILE>
+```
+
+### SNS — test publish
+
+```bash
+aws sns publish \
+  --topic-arn arn:aws:sns:eu-central-1:<ACCOUNT_ID>:baseline-alerts \
+  --subject "baseline-alerts test" \
+  --message "SNS delivery test from CLI (eu-central-1)" \
+  --region eu-central-1 \
+  --profile <PROFILE>
+```
+
+---
+
+## 🔐 Security / No‑Secrets Policy
+
+This repo is designed to be public. It must **never** contain:
+
+* access keys / secret keys / session tokens
+* SSO cache
+* Terraform state files
+* generated audit outputs
+
+**Required:** keep these paths out of Git:
+
+* `**/terraform.tfstate*`
+* `**/.terraform/`
+* `**/.aws/` and `**/sso/cache/`
+* `python-cli/out/`
+
+---
+
+## 💼 Recruiter-friendly summary
 
 This project demonstrates:
-• AWS-native security services  
-• Infrastructure as Code best practices  
-• Verification-driven security  
-• Clean separation of deployment and audit  
-• Professional handling of sensitive data  
 
-It reflects how cloud security is implemented in production environments.
+* AWS-native detection & alerting (**GuardDuty + EventBridge + SNS**)
+* Infrastructure as Code (**Terraform**) with reproducible deployments
+* Verification-driven security (**audit CLI**)
+* Evidence-driven delivery (**console + CLI + delivered email**)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-📄 LICENSE
+## 📄 License
 
 MIT
