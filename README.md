@@ -4,7 +4,6 @@
 [![Python](https://img.shields.io/badge/Python-Audit%20CLI-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![AWS](https://img.shields.io/badge/AWS-GuardDuty%20%7C%20EventBridge%20%7C%20SNS-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com/)
 [![CloudTrail](https://img.shields.io/badge/AWS-CloudTrail-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com/cloudtrail/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](LICENSE)
 
 A practical, reproducible **AWS security baseline** that deploys core controls with **Terraform** and verifies them with a lightweight **Python audit CLI**.
 
@@ -37,7 +36,7 @@ This is about more than creating resources — it’s about proving that finding
 
 After `terraform apply`, run:
 
-- `python -m aws_audit scan` to validate the key controls and wiring
+- `python -m aws_audit scan --profile baseline-readonly --region eu-central-1` to validate the key controls and wiring
 - `python -m aws_audit report --format markdown` to generate a readable report
 
 Outputs:
@@ -51,6 +50,24 @@ The **Evidence** section includes console/CLI screenshots and an example SNS ema
 This repo is intentionally scoped to a **single AWS account** and **one region** to keep deployment and verification reproducible. Organization-wide multi-account setups (AWS Organizations / delegated admin) and full landing zone patterns are out of scope for this repo.
 
 ---
+
+## Local validation
+
+```bash
+terraform fmt -check -recursive terraform
+terraform -chdir=terraform init -backend=false
+terraform -chdir=terraform validate
+```
+
+For report-only development, render the synthetic scan result without contacting AWS:
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install -r python-cli/requirements.txt
+cd python-cli
+python -m aws_audit report --scan ../docs/examples/synthetic-scan.json
+```
 
 ## 🧭 Architecture
 

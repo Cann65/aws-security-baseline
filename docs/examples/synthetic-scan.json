@@ -1,0 +1,8 @@
+{
+  "meta": {"profile": "synthetic-demo", "region": "eu-central-1", "generated_at_utc": "2025-02-20T12:00:00Z"},
+  "summary": {"pass": 1, "warn": 1, "fail": 0},
+  "findings": [
+    {"id": "guardduty_enabled", "status": "PASS", "title": "GuardDuty detector", "details": "The synthetic account has an enabled detector."},
+    {"id": "sns_subscription", "status": "WARN", "title": "SNS subscription confirmation", "details": "The synthetic subscription is pending confirmation."}
+  ]
+}
